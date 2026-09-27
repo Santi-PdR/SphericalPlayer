@@ -87,17 +87,18 @@ public abstract class PlayerMixin implements ICustomPlayerData{
 
     @Unique
     private void sphericalPlayerMod$applyTrampleDamage(Player player) {
+        sphericalPlayerMod$trampleCooldowns.replaceAll((entityId, ticks) -> ticks - 1);
+        sphericalPlayerMod$trampleCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
+
         if (!((ICustomPlayerData) player).sphericalPlayerMod$getFlag()) return;
+        if (player.getDeltaMovement().lengthSqr() < 1.0E-4D) return;
 
         var strength = player.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
         if (strength == null) return;
 
-        // Potion amplifiers are zero-based: amplifier 399 is Strength 400.
+        // Potion amplifiers are zero-based: amplifier 7 is Strength 8.
         float damage = strength.getAmplifier() + 1.0F;
         if (damage <= 0.0F) return;
-
-        sphericalPlayerMod$trampleCooldowns.replaceAll((entityId, ticks) -> ticks - 1);
-        sphericalPlayerMod$trampleCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
 
         AABB bounds = player.getBoundingBox();
         List<net.minecraft.world.entity.LivingEntity> targets =
