@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.tacowasa059.sphericalplayermod.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "sphericalplayermod.refmap.json",
+  "mixins": [
+    "common.PlayerMixin",
+    "common.EntityMixin",
+    "common.LivingEntityMixin"
+  ],
+  "client": [
+    "client.PlayerRendererMixin",
+    "client.GameRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
