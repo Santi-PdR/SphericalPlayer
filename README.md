@@ -19,4 +19,4 @@ Use Java 17 and run `./gradlew build`. The GitHub Actions workflow also launches
 
 ### Damage while rolling
 
-While sphere mode is enabled, colliding with a living entity deals damage equal to the player's Strength effect level. For example, Strength 400 (effect amplifier 399) deals 400 base damage. A short per-target cooldown prevents repeated damage every tick while contact continues. This is evaluated on the server.
+When a moving player in sphere mode contacts a living entity, the mod performs a normal player attack with the main-hand item. This preserves unarmed damage, weapon damage (including modded items), Strength and other attribute/effect modifiers, enchantments, item hit hooks, and the held weapon's normal attack cooldown. The attack is performed on the server.
