@@ -77,7 +77,13 @@ public abstract class PlayerMixin implements ICustomPlayerData{
             sphericalPlayerMod$quaternion = sphericalPlayerMod$getValidQuaternion(quaternion);
 
 
-        } else if (player.isAlive()) {
+        }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void sphericalPlayerMod$handleTrampleHits(CallbackInfo ci) {
+        Player player = (Player) (Object) this;
+        if (!player.level().isClientSide && player.isAlive()) {
             sphericalPlayerMod$applyTrampleDamage(player);
         }
     }
