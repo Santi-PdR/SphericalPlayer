@@ -53,6 +53,9 @@ public abstract class PlayerMixin implements ICustomPlayerData{
     @Unique
     private final Map<Integer, Integer> sphericalPlayerMod$collisionCooldowns = new HashMap<>();
 
+    @Unique
+    private final Map<Integer, Integer> sphericalPlayerMod$trampleCooldowns = new HashMap<>();
+
 
     @Inject(method = "tick", at=@At("HEAD"))
     protected void tick(CallbackInfo ci){
@@ -77,9 +80,37 @@ public abstract class PlayerMixin implements ICustomPlayerData{
             sphericalPlayerMod$quaternion = sphericalPlayerMod$getValidQuaternion(quaternion);
 
 
+        } else if (player.isAlive()) {
+            sphericalPlayerMod$applyTrampleDamage(player);
         }
+    }
 
-//        sphericalPlayerMod$applyCollision();
+    @Unique
+    private void sphericalPlayerMod$applyTrampleDamage(Player player) {
+        if (!((ICustomPlayerData) player).sphericalPlayerMod$getFlag()) return;
+
+        var strength = player.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
+        if (strength == null) return;
+
+        // Potion amplifiers are zero-based: amplifier 399 is Strength 400.
+        float damage = strength.getAmplifier() + 1.0F;
+        if (damage <= 0.0F) return;
+
+        sphericalPlayerMod$trampleCooldowns.replaceAll((entityId, ticks) -> ticks - 1);
+        sphericalPlayerMod$trampleCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
+
+        AABB bounds = player.getBoundingBox();
+        List<net.minecraft.world.entity.LivingEntity> targets =
+                player.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class, bounds,
+                        target -> target != player && target.isAlive()
+                                && target.getBoundingBox().intersects(bounds));
+
+        for (net.minecraft.world.entity.LivingEntity target : targets) {
+            if (sphericalPlayerMod$trampleCooldowns.containsKey(target.getId())) continue;
+
+            target.hurt(player.damageSources().playerAttack(player), damage);
+            sphericalPlayerMod$trampleCooldowns.put(target.getId(), 10);
+        }
     }
 
     @Unique
