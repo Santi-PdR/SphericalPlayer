@@ -15,3 +15,8 @@ The original `/setSphere isBall set <targets> <true|false>` command remains avai
 ## Build
 
 Use Java 17 and run `./gradlew build`. The GitHub Actions workflow also launches a headless client to check startup and Mixin application.
+
+
+### Damage while rolling
+
+While sphere mode is enabled, colliding with a living entity deals damage equal to the player's Strength effect level. For example, Strength 400 (effect amplifier 399) deals 400 base damage. A short per-target cooldown prevents repeated damage every tick while contact continues. This is evaluated on the server.
