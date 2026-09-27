@@ -53,9 +53,6 @@ public abstract class PlayerMixin implements ICustomPlayerData{
     @Unique
     private final Map<Integer, Integer> sphericalPlayerMod$collisionCooldowns = new HashMap<>();
 
-    @Unique
-    private final Map<Integer, Integer> sphericalPlayerMod$trampleCooldowns = new HashMap<>();
-
 
     @Inject(method = "tick", at=@At("HEAD"))
     protected void tick(CallbackInfo ci){
@@ -87,18 +84,8 @@ public abstract class PlayerMixin implements ICustomPlayerData{
 
     @Unique
     private void sphericalPlayerMod$applyTrampleDamage(Player player) {
-        sphericalPlayerMod$trampleCooldowns.replaceAll((entityId, ticks) -> ticks - 1);
-        sphericalPlayerMod$trampleCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
-
         if (!((ICustomPlayerData) player).sphericalPlayerMod$getFlag()) return;
         if (player.getDeltaMovement().lengthSqr() < 1.0E-4D) return;
-
-        var strength = player.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_BOOST);
-        if (strength == null) return;
-
-        // Potion amplifiers are zero-based: amplifier 7 is Strength 8.
-        float damage = strength.getAmplifier() + 1.0F;
-        if (damage <= 0.0F) return;
 
         AABB bounds = player.getBoundingBox();
         List<net.minecraft.world.entity.LivingEntity> targets =
@@ -107,13 +94,12 @@ public abstract class PlayerMixin implements ICustomPlayerData{
                                 && target.getBoundingBox().intersects(bounds));
 
         for (net.minecraft.world.entity.LivingEntity target : targets) {
-            if (sphericalPlayerMod$trampleCooldowns.containsKey(target.getId())) continue;
-
-            target.hurt(player.damageSources().playerAttack(player), damage);
-            sphericalPlayerMod$trampleCooldowns.put(target.getId(), 10);
+            // Let vanilla apply the held item's attack damage, Strength, enchantments,
+            // item hooks, knockback, and normal attack cooldown.
+            if (player.getAttackStrengthScale(1.0F) < 1.0F) return;
+            player.attack(target);
         }
     }
-
     @Unique
     public void sphericalPlayerMod$applyCollision() {
         Player player = (Player) (Object)this;
